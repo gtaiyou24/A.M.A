@@ -1,0 +1,35 @@
+name: Deploy to Production
+on:
+  push:
+    branches:
+      - main
+env:
+  AWS_REGION: ap-northeast-1
+  DOCKER_IMAGE_NAME: ama
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Push Docker Image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/${{ env.DOCKER_IMAGE_NAME }}:latest . -f ./Dockerfile.aws.lambda
+          docker push $ECR_REGISTRY/${{ env.DOCKER_IMAGE_NAME }}:latest
+      - name: Deploy Lambda
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: aws lambda update-function-code --function-name ${{ env.DOCKER_IMAGE_NAME }} --image-uri $ECR_REGISTRY/${{ env.DOCKER_IMAGE_NAME }}:latest
