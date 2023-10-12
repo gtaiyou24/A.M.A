@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from di import DIContainer
@@ -25,6 +26,7 @@ def create(request: SaveOutfitRequest):
         url=request.url
     ))
 
+
 @router.put('/{outfit_id}', name='更新')
 def update(outfit_id: UUID, request: SaveOutfitRequest):
     application_service: OutfitApplicationService = DIContainer.instance().resolve(OutfitApplicationService)
@@ -37,11 +39,13 @@ def update(outfit_id: UUID, request: SaveOutfitRequest):
         url=request.url
     ))
 
+
 @router.get('', name='一覧取得', response_model=OutfitListJson)
-def list(start: int = 0, size: int = 30) -> OutfitListJson:
+def list(start: int = 0, size: int = 30, gender: Optional[str] = 'MEN') -> OutfitListJson:
     application_service: OutfitApplicationService = DIContainer.instance().resolve(OutfitApplicationService)
-    dpo = application_service.list(start, size)
+    dpo = application_service.list(start, size, gender)
     return OutfitListJson.of(dpo)
+
 
 @router.get('/{outfit_id}', name='詳細取得', response_model=OutfitJson)
 def get(outfit_id: UUID) -> OutfitJson:

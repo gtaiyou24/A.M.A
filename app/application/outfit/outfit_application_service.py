@@ -1,5 +1,5 @@
 import datetime
-from typing import NoReturn
+from typing import NoReturn, Optional
 
 from injector import singleton, inject
 
@@ -39,10 +39,10 @@ class OutfitApplicationService:
 
         self.__outfit_repository.save(outfit)
 
-    def list(self, start: int = 0, size: int = 30) -> ListOutfitDpo:
+    def list(self, start: int = 0, size: int = 30, gender: Optional[str] = None) -> ListOutfitDpo:
         return ListOutfitDpo(
             self.__outfit_repository.total(),
-            self.__outfit_repository.outfits(start, size)
+            self.__outfit_repository.outfits(start, size, None if gender is None else Gender[gender])
         )
 
     def get(self, outfit_id: str) -> OutfitDpo:

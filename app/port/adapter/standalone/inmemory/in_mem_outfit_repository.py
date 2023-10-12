@@ -1,7 +1,7 @@
 import uuid
-from typing import NoReturn
+from typing import NoReturn, Optional
 
-from domain.model.outfit import OutfitRepository, Outfit, OutfitId
+from domain.model.outfit import OutfitRepository, Outfit, OutfitId, Gender
 
 
 class InMemOutfitRepository(OutfitRepository):
@@ -20,8 +20,15 @@ class InMemOutfitRepository(OutfitRepository):
                 return outfit
         raise ValueError()
 
-    def outfits(self, start: int, size: int) -> list[Outfit]:
-        return self.__outfits[start:start+size]
+    def outfits(self, start: int, size: int, gender: Optional[Gender] = None) -> list[Outfit]:
+        if gender is None:
+            return self.__outfits[start:start+size]
+
+        outfits = []
+        for outfit in self.__outfits:
+            if outfit.gender == gender:
+                outfits.append(outfit)
+        return outfits[start:start+size]
 
     def save(self, outfit: Outfit) -> NoReturn:
         self.__outfits.append(outfit)

@@ -1,7 +1,7 @@
 import abc
-from typing import NoReturn
+from typing import NoReturn, Optional
 
-from domain.model.outfit import OutfitId, Outfit
+from domain.model.outfit import OutfitId, Outfit, Gender
 
 
 class OutfitRepository(abc.ABC):
@@ -18,7 +18,7 @@ class OutfitRepository(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def outfits(self, start: int, size: int) -> list[Outfit]:
+    def outfits(self, start: int, size: int, gender: Optional[Gender] = None) -> list[Outfit]:
         pass
 
     @abc.abstractmethod

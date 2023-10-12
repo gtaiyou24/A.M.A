@@ -13,7 +13,6 @@ class OutfitDefinition(BaseModel):
         WOMEN = 'WOMEN'
         MEN = 'MEN'
         KIDS = 'KIDS'
-        UNISEX = 'UNISEX'
         UNKNOWN = 'UNKNOWN'
 
     images: List[str] = Field(title='画像URLの一覧')
