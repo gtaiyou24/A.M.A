@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="A.M.A", openapi_prefix=os.getenv('OPENAPI_PREFIX'), lifespan=lifespan)
+app = FastAPI(title="A.M.A", root_path=os.getenv('OPENAPI_PREFIX'), lifespan=lifespan)
 
 app.include_router(health_resource.router)
 app.include_router(outfit_resource.router)
