@@ -26,3 +26,4 @@ class OutfitImagesCrud:
         with Session(self.__engine, future=True) as session:
             table_rows: list[OutfitImagesTableRow] = session.query(OutfitImagesTableRow).filter_by(**kwargs).all()
             [session.delete(table_row) for table_row in table_rows]
+            session.commit()
