@@ -1,11 +1,25 @@
-FROM --platform=linux/amd64 public.ecr.aws/lambda/python:3.11
+ARG FUNCTION_DIR="/function"
 
-WORKDIR /var/task
+FROM python:3.11 as build-image
 
-COPY ./app ${LAMBDA_TASK_ROOT}/
+ARG FUNCTION_DIR
 
-RUN yum install -y python3-devel mysql-devel gcc \
-    && pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+RUN mkdir -p ${FUNCTION_DIR}
+COPY ./app ${FUNCTION_DIR}
 
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir --target ${FUNCTION_DIR} awslambdaric \
+    && pip install --no-cache-dir -r /function/requirements.txt \
+    && apt-get update -y \
+    && apt-get install -y default-libmysqlclient-dev pkg-config build-essential \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+FROM python:3.11-slim
+
+ARG FUNCTION_DIR
+WORKDIR ${FUNCTION_DIR}
+
+COPY --from=build-image ${FUNCTION_DIR} ${FUNCTION_DIR}
+
+ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 CMD ["start_lambda.handler"]
