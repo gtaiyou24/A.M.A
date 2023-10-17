@@ -4,7 +4,8 @@ WORKDIR /var/task
 
 COPY ./app ${LAMBDA_TASK_ROOT}/
 
-RUN pip install --upgrade pip \
+RUN yum install -y python3-devel mysql-devel gcc \
+    && pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 CMD ["start_lambda.handler"]
