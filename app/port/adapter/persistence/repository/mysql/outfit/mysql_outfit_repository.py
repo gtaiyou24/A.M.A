@@ -24,7 +24,7 @@ class MySQLOutfitRepository(OutfitRepository):
     def outfits(self, start: int, size: int, gender: Optional[Gender] = None) -> list[Outfit]:
         return self.__driver_manager_outfit.pagination(gender, start, size)
 
-    def save(self, outfit: Outfit) -> NoReturn:
+    def add(self, outfit: Outfit) -> NoReturn:
         self.__driver_manager_outfit.upsert(outfit)
 
     def remove(self, outfit: Outfit) -> NoReturn:

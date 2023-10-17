@@ -25,7 +25,7 @@ class OutfitApplicationService:
             command.posted_at if command.posted_at is not None else datetime.date.today(),
             URL(command.url)
         )
-        self.__outfit_repository.save(outfit)
+        self.__outfit_repository.add(outfit)
 
     def update(self, command: UpdateOutfitCommand) -> NoReturn:
         outfit_id = OutfitId(command.id)
@@ -37,7 +37,7 @@ class OutfitApplicationService:
         outfit.posted_at = command.posted_at if command.posted_at is not None else datetime.date.today()
         outfit.url = URL(command.url)
 
-        self.__outfit_repository.save(outfit)
+        self.__outfit_repository.add(outfit)
 
     def list(self, start: int = 0, size: int = 30, gender: Optional[str] = None) -> ListOutfitDpo:
         return ListOutfitDpo(

@@ -22,7 +22,7 @@ class OutfitRepository(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def save(self, outfit: Outfit) -> NoReturn:
+    def add(self, outfit: Outfit) -> NoReturn:
         pass
 
     @abc.abstractmethod

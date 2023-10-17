@@ -30,13 +30,26 @@ class OutfitsCrud:
                 query = query.filter_by(gender=gender)
             return query.filter_by(deleted=False).offset(start).limit(size).all()
 
-    def upsert(self, outfit_table_row: OutfitsTableRow) -> NoReturn:
-        optional = self.find_one_by(id=outfit_table_row.id)
+    def insert(self, table_row: OutfitsTableRow) -> NoReturn:
+        with Session(self.__engine, future=True) as session:
+            session.add(table_row)
+            session.commit()
+
+    def update(self, table_row: OutfitsTableRow) -> NoReturn:
+        optional = self.find_one_by(id=table_row.id)
+        if optional is None:
+            raise Exception(f'コーディネート {table_row.id} がないため、更新できません。')
+        with Session(self.__engine, future=True) as session:
+            optional.update(table_row)
+            session.commit()
+
+    def upsert(self, table_row: OutfitsTableRow) -> NoReturn:
+        optional = self.find_one_by(id=table_row.id)
         with Session(self.__engine, future=True) as session:
             if optional is None:
-                session.add(outfit_table_row)
+                session.add(table_row)
             else:
-                optional.update(outfit_table_row)
+                optional.update(table_row)
             session.commit()
 
     def delete(self, id: str) -> NoReturn:
