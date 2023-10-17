@@ -41,3 +41,4 @@ class DriverManagerOutfit:
 
     def delete(self, id: OutfitId) -> NoReturn:
         self.__outfits_crud.delete(id.id)
+        self.__outfit_images_crud.delete(outfit_id=id.id)
