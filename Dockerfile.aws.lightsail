@@ -8,7 +8,10 @@ COPY ./app/requirements.txt $project_dir
 WORKDIR $project_dir
 
 # ライブラリをインストール
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+RUN apt-get update -y && \
+    apt-get install -y default-libmysqlclient-dev pkg-config build-essential && \
+    pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8000
 

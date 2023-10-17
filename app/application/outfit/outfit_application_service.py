@@ -48,6 +48,8 @@ class OutfitApplicationService:
     def get(self, outfit_id: str) -> OutfitDpo:
         outfit_id = OutfitId(outfit_id)
         outfit = self.__outfit_repository.outfit_of_id(outfit_id)
+        if outfit is None:
+            raise Exception(f'該当コーディネート {outfit_id} が見つかりませんでした')
         return OutfitDpo(outfit)
 
     def delete(self, outfit_id: str) -> NoReturn:

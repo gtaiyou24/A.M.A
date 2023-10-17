@@ -14,7 +14,7 @@ class OutfitRepository(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def outfit_of_id(self, an_outfit_id: OutfitId) -> Outfit:
+    def outfit_of_id(self, an_outfit_id: OutfitId) -> Optional[Outfit]:
         pass
 
     @abc.abstractmethod

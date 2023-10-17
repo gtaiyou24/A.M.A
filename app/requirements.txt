@@ -3,3 +3,5 @@ uvicorn[standard]==0.23.2
 mangum==0.17.0
 di4injector==0.0.1
 slf4py==0.0.2
+mysqlclient==2.2.0
+SQLAlchemy==2.0.22

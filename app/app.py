@@ -3,19 +3,33 @@ from contextlib import asynccontextmanager
 
 from di import DIContainer, DI
 from fastapi import FastAPI
+from sqlalchemy import create_engine, Engine
 
 from domain.model.outfit import OutfitRepository
+from port.adapter.persistence.repository.mysql import DataBase
+from port.adapter.persistence.repository.mysql.outfit import MySQLOutfitRepository
 from port.adapter.resource.outfit import outfit_resource
 from port.adapter.standalone.inmemory import InMemOutfitRepository
 from port.adapter.resource.health import health_resource
 
+engine: Engine = create_engine(
+    'mysql://{username}:{password}@{host}:{port}/{database}?ssl_mode=VERIFY_IDENTITY&charset=utf8mb4'.format(
+        username=os.getenv('DATABASE_USERNAME'),
+        password=os.getenv('DATABASE_PASSWORD'),
+        host=os.getenv('DATABASE_HOST'),
+        port=3306,
+        database=os.getenv('DATABASE')
+    )
+)
 DI_LIST = [
-    DI.of(OutfitRepository, {}, InMemOutfitRepository),
+    DI.of(Engine, {}, engine),
+    DI.of(OutfitRepository, {'MySQL': MySQLOutfitRepository, 'InMem': InMemOutfitRepository}, InMemOutfitRepository),
 ]
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    DataBase.metadata.create_all(bind=engine)
     [DIContainer.instance().register(di) for di in DI_LIST]
     yield
 
