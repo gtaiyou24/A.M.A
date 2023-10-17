@@ -1,25 +1,17 @@
-ARG FUNCTION_DIR="/function"
-
-FROM python:3.11 as build-image
-
-ARG FUNCTION_DIR
-
-RUN mkdir -p ${FUNCTION_DIR}
-COPY ./app ${FUNCTION_DIR}
-
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir --target ${FUNCTION_DIR} awslambdaric \
-    && pip install --no-cache-dir -r /function/requirements.txt \
-    && apt-get update -y \
-    && apt-get install -y default-libmysqlclient-dev pkg-config build-essential \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 FROM python:3.11-slim
 
-ARG FUNCTION_DIR
-WORKDIR ${FUNCTION_DIR}
+ARG project_dir=/function
+COPY ./app $project_dir
+COPY ./app/requirements.txt $project_dir
+WORKDIR $project_dir
 
-COPY --from=build-image ${FUNCTION_DIR} ${FUNCTION_DIR}
+# ライブラリをインストール
+RUN apt-get update -y \
+    && apt-get install -y default-libmysqlclient-dev pkg-config build-essential \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && pip install --upgrade pip \
+    && pip install --no-cache-dir awslambdaric \
+    && pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 CMD ["start_lambda.handler"]
