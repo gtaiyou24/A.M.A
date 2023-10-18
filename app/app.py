@@ -5,8 +5,9 @@ from di import DIContainer, DI
 from fastapi import FastAPI
 from sqlalchemy import create_engine, Engine
 
+from application import UnitOfWork
 from domain.model.outfit import OutfitRepository
-from port.adapter.persistence.repository.mysql import DataBase
+from port.adapter.persistence.repository.mysql import DataBase, MySQLUnitOfWork
 from port.adapter.persistence.repository.mysql.outfit import MySQLOutfitRepository
 from port.adapter.resource.outfit import outfit_resource
 from port.adapter.standalone.inmemory import InMemOutfitRepository

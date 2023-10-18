@@ -4,6 +4,7 @@ from injector import inject
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
+from port.adapter.persistence.repository.mysql import MySQLUnitOfWork
 from port.adapter.persistence.repository.mysql.outfit.driver import OutfitImagesTableRow
 
 
@@ -13,17 +14,11 @@ class OutfitImagesCrud:
         self.__engine = engine
 
     def find_all_by(self, **kwargs: Any) -> list[OutfitImagesTableRow]:
-        with Session(self.__engine, future=True) as session:
+        with Session(bind=self.__engine) as session:
             return session.query(OutfitImagesTableRow).filter_by(**kwargs).all()
 
     def insert(self, table_rows: list[OutfitImagesTableRow]) -> NoReturn:
-        with Session(self.__engine, future=True) as session:
-            for table_row in table_rows:
-                session.add(table_row)
-            session.commit()
+        MySQLUnitOfWork.current().session().add_all(table_rows)
 
     def delete(self, **kwargs) -> NoReturn:
-        with Session(self.__engine, future=True) as session:
-            table_rows: list[OutfitImagesTableRow] = session.query(OutfitImagesTableRow).filter_by(**kwargs).all()
-            [session.delete(table_row) for table_row in table_rows]
-            session.commit()
+        MySQLUnitOfWork.current().session().query(OutfitImagesTableRow).filter_by(**kwargs).delete()
