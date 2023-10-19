@@ -1,41 +1,64 @@
 from __future__ import annotations
 
-from typing import NoReturn, Optional
+from contextlib import contextmanager
+from typing import NoReturn
 
+from injector import singleton
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from application import UnitOfWork
 
 
+@singleton
 class MySQLUnitOfWork(UnitOfWork):
-    instance: Optional[MySQLUnitOfWork] = None
-
-    def __init__(self, engine: Engine, session: Session):
+    def __init__(self, engine: Engine):
         self.__engine = engine
-        self.__session = session
+        self.__ScopedSession = scoped_session(sessionmaker(bind=self.__engine))
+        self.__thread_local_session = None
 
-    @staticmethod
-    def current(engine: Optional[Engine] = None) -> MySQLUnitOfWork:
-        if MySQLUnitOfWork.instance is None:
-            MySQLUnitOfWork.instance = MySQLUnitOfWork(
-                engine,
-                scoped_session(sessionmaker(bind=engine))()
-            )
-        return MySQLUnitOfWork.instance
+    @contextmanager
+    def query(self) -> Session:
+        """
+        SELECTクエリを発行する用のセッションを発行する。
+        トランザクション管理対象ではないデータの取得にはこのメソッドを利用してください。
+        トランザクション管理の対象となるデータ更新・新規作成・削除・更新のためのデータ取得は self.transaction() を利用してください。
+        """
+        session = Session(bind=self.__engine)
+        try:
+            yield session
+        finally:
+            session.close()
 
-    def session(self) -> Session:
-        return self.__session
+    def transaction(self) -> Session:
+        """
+        トランザクション管理をするためにスレッドローカルのセッションを発行する。
+        トランザクション管理の対象となるデータ更新・新規作成・削除・更新のためのデータ取得はこのメソッドを利用してください。
+        トランザクション管理対象ではないデータの取得には self.session() を利用するようにしてください。
+
+        :example
+        insert: unit_of_work.transaction().add(table_row)
+        delete: unit_of_work.transaction().query(HogeTableRow).filter_by(**kwargs).delete()
+        update:
+            optional = unit_of_work.transaction().query(FugaTableRow).filter_by(id=id).one_or_none()
+            if optional is None:
+                raise Exception('Not Found')
+            optional.column1 = new_column1
+            optional.column2 = new_column2
+        """
+        if self.__thread_local_session is None:
+            self.__thread_local_session = self.__ScopedSession()
+        return self.__thread_local_session
 
     def start(self) -> NoReturn:
-        self.__session.begin()
+        self.transaction().begin()
 
     def rollback(self) -> NoReturn:
-        self.__session.rollback()
-        self.__session.close()
-        self.instance = None
+        self.transaction().rollback()
+        self.transaction().close()
+        self.__thread_local_session = None
 
     def commit(self) -> NoReturn:
-        self.__session.commit()
-        self.__session.close()
-        self.instance = None
+        self.transaction().commit()
+        self.transaction().close()
+        self.__thread_local_session = None
