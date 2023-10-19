@@ -24,6 +24,7 @@ engine: Engine = create_engine(
 )
 DI_LIST = [
     DI.of(Engine, {}, engine),
+    DI.of(UnitOfWork, {}, MySQLUnitOfWork(engine)),
     DI.of(OutfitRepository, {'MySQL': MySQLOutfitRepository, 'InMem': InMemOutfitRepository}, InMemOutfitRepository),
 ]
 

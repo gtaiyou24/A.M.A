@@ -7,11 +7,6 @@ from sqlalchemy import Engine
 
 
 class UnitOfWork(abc.ABC):
-    @staticmethod
-    @abc.abstractmethod
-    def current(engine: Optional[Engine] = None) -> UnitOfWork:
-        pass
-
     @abc.abstractmethod
     def start(self) -> NoReturn:
         """トランザクションを開始する"""
